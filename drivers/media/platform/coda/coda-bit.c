@@ -417,6 +417,46 @@ void coda_bit_stream_end_flag(struct coda_ctx *ctx)
 	}
 }
 
+static void coda_dump_regs(struct coda_dev *dev)
+{
+	int i;
+	printk("\t000 ");
+	for (i = 0x00; i <= 0x1c; i += 4) {
+		u32 data;
+		data = coda_read(dev, i);
+		printk("%08x ", data);
+		if ((i/4) % 8 == 7 && i != 0x1c) {
+			printk("\n");
+			printk("\t%03x ", i + 4);
+		}
+	}
+	printk("\n");
+	printk("\t100 ");
+	for (i = 0x100; i <= 0x1fc; i += 4) {
+		u32 data;
+		data = coda_read(dev, i);
+		printk("%08x ", data);
+		if ((i/4) % 8 == 7 && i != 0x1fc) {
+			printk("\n");
+			printk("\t%03x ", i + 4);
+		}
+	}
+	printk("\n");
+}
+
+void coda_bit_debug_timeout(struct coda_ctx *ctx)
+{
+	struct device *dev = ctx->fh.vdev->dev_parent;
+
+	dev_err(dev, "bitstream payload: %d\n", coda_get_bitstream_payload(ctx));
+	coda_kfifo_sync_from_device(ctx);
+	dev_err(dev, "bitstream payload: %d\n", coda_get_bitstream_payload(ctx));
+
+	clk_prepare_enable(ctx->dev->clk_per);
+	coda_dump_regs(ctx->dev);
+	clk_disable_unprepare(ctx->dev->clk_per);
+}
+
 static void coda_parabuf_write(struct coda_ctx *ctx, int index, u32 value)
 {
 	struct coda_dev *dev = ctx->dev;
