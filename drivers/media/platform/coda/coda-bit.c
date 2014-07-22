@@ -153,6 +153,42 @@ int coda_hw_reset(struct coda_ctx *ctx)
 	return ret;
 }
 
+static int coda_sw_reset(struct coda_ctx *ctx)
+{
+	struct coda_dev *dev = ctx->dev;
+	unsigned long timeout;
+	unsigned int cmd, idx;
+	int i;
+
+	idx = coda_read(dev, CODA_REG_BIT_RUN_INDEX);
+
+	timeout = jiffies + msecs_to_jiffies(100);
+	coda_write(dev, 0x11, CODA9_GDI_BUS_CTRL);
+	while (coda_read(dev, CODA9_GDI_BUS_STATUS) != 0x77) {
+		if (time_after(jiffies, timeout))
+			return -ETIME;
+		cpu_relax();
+	}
+
+	cmd = CODA9_SW_RESET_BPU_CORE | CODA9_SW_RESET_BPU_BUS |
+	      CODA9_SW_RESET_VCE_CORE | CODA9_SW_RESET_VCE_BUS;
+	/* Delay more than 64 VPU cycles */
+	for (i = 0; i < 50; i++);
+	timeout = jiffies + msecs_to_jiffies(100);
+	while (coda_read(dev, CODA9_REG_BIT_SW_RESET_STATUS) != 0) {
+		if (time_after(jiffies, timeout))
+			return -ETIME;
+		cpu_relax();
+	}
+
+	coda_write(dev, 0, CODA9_REG_BIT_SW_RESET);
+	coda_write(dev, 0, CODA9_GDI_BUS_CTRL);
+	coda_write(dev, idx, CODA_REG_BIT_RUN_INDEX);
+
+	return 0;
+}
+
+
 static void coda_kfifo_sync_from_device(struct coda_ctx *ctx)
 {
 	struct __kfifo *kfifo = &ctx->bitstream_fifo.kfifo;
@@ -1297,6 +1333,10 @@ static int coda_prepare_encode(struct coda_ctx *ctx)
 		src_buf->flags |= V4L2_BUF_FLAG_KEYFRAME;
 		src_buf->flags &= ~V4L2_BUF_FLAG_PFRAME;
 	}
+
+	/* Workaround for RTL bug of H264 encoder on i.MX6Q */
+	if (dev->devtype->product == CODA_960 && dst_fourcc == V4L2_PIX_FMT_H264)
+		coda_sw_reset(ctx);
 
 	if (dev->devtype->product == CODA_960)
 		coda_set_gdi_regs(ctx);
