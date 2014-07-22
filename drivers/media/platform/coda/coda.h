@@ -121,7 +121,7 @@ struct coda_params {
 	u8			h264_level_idc;
 	u8			mpeg4_intra_qp;
 	u8			mpeg4_inter_qp;
-	u8			gop_size;
+	int			gop_size;
 	int			intra_refresh;
 	u8			jpeg_quality;
 	u8			jpeg_restart_interval;
