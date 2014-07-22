@@ -1078,7 +1078,7 @@ static int coda_start_encoding(struct coda_ctx *ctx)
 			break;
 		}
 		coda_write(dev, value, CODA_CMD_ENC_SEQ_SLICE_MODE);
-		value = ctx->params.gop_size & CODA_GOP_SIZE_MASK;
+		value = ctx->params.gop_size;
 		coda_write(dev, value, CODA_CMD_ENC_SEQ_GOP_SIZE);
 	}
 
@@ -1331,7 +1331,8 @@ static int coda_prepare_encode(struct coda_ctx *ctx)
 	 * frame as IDR. This is a problem for some decoders that can't
 	 * recover when a frame is lost.
 	 */
-	if ((src_buf->sequence % ctx->params.gop_size) == 0)
+	if (ctx->params.gop_size != 0 &&
+	    (src_buf->sequence % ctx->params.gop_size) == 0)
 		src_buf->flags |= V4L2_BUF_FLAG_KEYFRAME;
 	if (src_buf->flags & V4L2_BUF_FLAG_KEYFRAME)
 		src_buf->flags &= ~V4L2_BUF_FLAG_PFRAME;
