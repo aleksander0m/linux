@@ -708,7 +708,7 @@ static int convert_start(struct ipu_image_convert_run *run)
 			       s_image->tile[0].height,
 			       dest_width,
 			       dest_height,
-			       src_cs, dest_cs);
+			       src_cs, dest_cs, 0);
 	if (ret) {
 		dev_err(priv->ipu->dev, "ipu_ic_task_init failed, %d\n", ret);
 		return ret;
