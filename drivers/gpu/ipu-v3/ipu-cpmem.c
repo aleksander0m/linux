@@ -908,6 +908,45 @@ void ipu_cpmem_dump(struct ipuv3_channel *ch)
 }
 EXPORT_SYMBOL_GPL(ipu_cpmem_dump);
 
+/*
+ * The following three functions are a major hack for the V4L2 overlay driver
+ */
+void ipu_cpmem_get_base_resolution(struct ipu_soc *ipu, u32 *width, u32 *height)
+{
+	struct ipuv3_channel *ch = &ipu->channel[IPUV3_CHANNEL_MEM_BG_SYNC];
+
+	*width = ipu_ch_param_read_field(ch, IPU_FIELD_FW) + 1;
+	*height = ipu_ch_param_read_field(ch, IPU_FIELD_FH) + 1;
+}
+
+int ipu_cpmem_save(struct ipuv3_channel *ch, void **cpmem, u32 *eba)
+{
+	struct ipu_ch_param __iomem *p = ipu_get_cpmem(ch);
+
+	if (*cpmem)
+		kfree(cpmem);
+	*cpmem = kzalloc(sizeof(**cpmem), GFP_KERNEL);
+	if (!*cpmem)
+		return -ENOMEM;
+
+	memcpy(*cpmem, p, sizeof(struct ipu_ch_param));
+	*eba = ipu_ch_param_read_field(ch, IPU_FIELD_EBA0) << 3;
+
+	return 0;
+}
+
+void ipu_cpmem_restore(struct ipuv3_channel *ch, void **cpmem)
+{
+	struct ipu_ch_param __iomem *p = ipu_get_cpmem(ch);
+
+	if (!*cpmem)
+		return;
+
+	memcpy(p, *cpmem, sizeof(struct ipu_ch_param));
+	kfree(*cpmem);
+	*cpmem = NULL;
+}
+
 int ipu_cpmem_init(struct ipu_soc *ipu, struct device *dev, unsigned long base)
 {
 	struct ipu_cpmem *cpmem;
