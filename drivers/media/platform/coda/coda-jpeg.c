@@ -1284,6 +1284,8 @@ static int coda9_jpeg_prepare_encode(struct coda_ctx *ctx)
 	coda_write(dev, 1, CODA9_GDI_WPROT_ERR_CLR);
 	coda_write(dev, 0, CODA9_GDI_WPROT_RGN_EN);
 
+	trace_coda_jpeg_run(ctx, src_buf);
+
 	coda_write(dev, 1, CODA9_REG_JPEG_PIC_START);
 
 	return 0;
@@ -1298,6 +1300,8 @@ static void coda9_jpeg_finish_encode(struct coda_ctx *ctx)
 
 	src_buf = v4l2_m2m_src_buf_remove(ctx->fh.m2m_ctx);
 	dst_buf = v4l2_m2m_dst_buf_remove(ctx->fh.m2m_ctx);
+
+	trace_coda_jpeg_done(ctx, dst_buf);
 
 	/*
 	 * Set plane payload to the number of bytes written out
@@ -1491,6 +1495,9 @@ static int coda9_jpeg_prepare_decode(struct coda_ctx *ctx)
 	coda_write(dev, 0, CODA9_REG_JPEG_DPB_BASE00);
 	coda_write(dev, 0, CODA9_GDI_CONTROL);
 	coda_write(dev, 1, CODA9_GDI_PIC_INIT_HOST);
+
+	trace_coda_jpeg_run(ctx, src_buf);
+
 	coda_write(dev, 1, CODA9_REG_JPEG_PIC_START);
 
 	return 0;
@@ -1512,6 +1519,8 @@ static void coda9_jpeg_finish_decode(struct coda_ctx *ctx)
 	src_buf = v4l2_m2m_src_buf_remove(ctx->fh.m2m_ctx);
 	dst_buf = v4l2_m2m_dst_buf_remove(ctx->fh.m2m_ctx);
 	dst_buf->sequence = ctx->osequence++;
+
+	trace_coda_jpeg_done(ctx, dst_buf);
 
 	dst_buf->flags &= ~V4L2_BUF_FLAG_PFRAME;
 	dst_buf->flags |= V4L2_BUF_FLAG_KEYFRAME;
