@@ -1754,6 +1754,8 @@ static int __coda_start_decoding(struct coda_ctx *ctx)
 			coda_write(dev, 512, CODA_CMD_DEC_SEQ_SPP_CHUNK_SIZE);
 		}
 	}
+	if (src_fourcc == V4L2_PIX_FMT_JPEG)
+		coda_write(dev, 0, CODA_CMD_DEC_SEQ_JPG_THUMB_EN);
 	if (dev->devtype->product != CODA_960)
 		coda_write(dev, 0, CODA_CMD_DEC_SEQ_SRC_SIZE);
 
@@ -1828,6 +1830,16 @@ static int __coda_start_decoding(struct coda_ctx *ctx)
 					 (left_right & 0x3ff);
 		q_data_dst->rect.height = height - q_data_dst->rect.top -
 					  (top_bottom & 0x3ff);
+	}
+
+	if (src_fourcc == V4L2_PIX_FMT_JPEG) {
+		val = coda_read(dev, CODA_RET_DEC_SEQ_JPG_THUMB_IND) & 0x1;
+		if (val)
+			v4l2_warn(&dev->v4l2_dev, "thumbnail enabled\n");
+		val = coda_read(dev, CODA_RET_DEC_SEQ_JPG_PARA) & 0x7;
+		v4l2_dbg(1, coda_debug, &dev->v4l2_dev,
+			 "JPEG source format: %d (%s)\n",
+			 val, val ? "4:2:2" : "4:2:0");
 	}
 
 	ret = coda_alloc_framebuffers(ctx, q_data_dst, src_fourcc);
