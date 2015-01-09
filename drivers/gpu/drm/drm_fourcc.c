@@ -151,6 +151,11 @@ void drm_fb_get_bpp_depth(uint32_t format, unsigned int *depth,
 		*depth = 24;
 		*bpp = 32;
 		break;
+	case DRM_FORMAT_RGB565_A8:
+	case DRM_FORMAT_BGR565_A8:
+		*depth = 24;
+		*bpp = 16;
+		break;
 	case DRM_FORMAT_XRGB2101010:
 	case DRM_FORMAT_XBGR2101010:
 	case DRM_FORMAT_RGBX1010102:
@@ -162,10 +167,19 @@ void drm_fb_get_bpp_depth(uint32_t format, unsigned int *depth,
 		*depth = 30;
 		*bpp = 32;
 		break;
+	case DRM_FORMAT_RGB888_A8:
+	case DRM_FORMAT_BGR888_A8:
+		*depth = 32;
+		*bpp = 24;
+		break;
 	case DRM_FORMAT_ARGB8888:
 	case DRM_FORMAT_ABGR8888:
 	case DRM_FORMAT_RGBA8888:
 	case DRM_FORMAT_BGRA8888:
+	case DRM_FORMAT_XRGB8888_A8:
+	case DRM_FORMAT_XBGR8888_A8:
+	case DRM_FORMAT_RGBX8888_A8:
+	case DRM_FORMAT_BGRX8888_A8:
 		*depth = 32;
 		*bpp = 32;
 		break;
@@ -207,6 +221,14 @@ int drm_format_num_planes(uint32_t format)
 	case DRM_FORMAT_NV61:
 	case DRM_FORMAT_NV24:
 	case DRM_FORMAT_NV42:
+	case DRM_FORMAT_RGB565_A8:
+	case DRM_FORMAT_BGR565_A8:
+	case DRM_FORMAT_RGB888_A8:
+	case DRM_FORMAT_BGR888_A8:
+	case DRM_FORMAT_XRGB8888_A8:
+	case DRM_FORMAT_XBGR8888_A8:
+	case DRM_FORMAT_RGBX8888_A8:
+	case DRM_FORMAT_BGRX8888_A8:
 		return 2;
 	default:
 		return 1;
@@ -243,6 +265,17 @@ int drm_format_plane_cpp(uint32_t format, int plane)
 	case DRM_FORMAT_NV24:
 	case DRM_FORMAT_NV42:
 		return plane ? 2 : 1;
+	case DRM_FORMAT_RGB565_A8:
+	case DRM_FORMAT_BGR565_A8:
+		return plane ? 1 : 2;
+	case DRM_FORMAT_RGB888_A8:
+	case DRM_FORMAT_BGR888_A8:
+		return plane ? 1 : 3;
+	case DRM_FORMAT_XRGB8888_A8:
+	case DRM_FORMAT_XBGR8888_A8:
+	case DRM_FORMAT_RGBX8888_A8:
+	case DRM_FORMAT_BGRX8888_A8:
+		return plane ? 1 : 4;
 	case DRM_FORMAT_YUV410:
 	case DRM_FORMAT_YVU410:
 	case DRM_FORMAT_YUV411:
