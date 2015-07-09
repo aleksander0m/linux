@@ -260,12 +260,21 @@ void coda_fill_bitstream(struct coda_ctx *ctx, struct list_head *buffer_list)
 
 	while (v4l2_m2m_num_src_bufs_ready(ctx->fh.m2m_ctx) > 0) {
 		/*
-		 * Only queue a single JPEG into the bitstream buffer, except
-		 * to increase payload over 512 bytes or if in hold state.
+		 * Only queue two JPEGs into the bitstream buffer, except if
+		 * in stream end state.
 		 */
-		if (ctx->codec->src_fourcc == V4L2_PIX_FMT_JPEG &&
-		    (coda_get_bitstream_payload(ctx) >= 512) && !ctx->hold)
-			break;
+		if (ctx->codec->src_fourcc == V4L2_PIX_FMT_JPEG) {
+			int num_metas = ctx->num_metas;
+
+			/*
+			 * We need at least one complete buffer and the header
+			 * of another buffer (for prescan) in the bitstream.
+			 */
+			if (num_metas > 1 && !(ctx->bit_stream_param &
+					       CODA_BIT_STREAM_END_FLAG)) {
+				break;
+			}
+		}
 
 		src_buf = v4l2_m2m_next_src_buf(ctx->fh.m2m_ctx);
 
