@@ -1482,8 +1482,33 @@ static void coda_buf_queue(struct vb2_buffer *vb)
 	/* Check the first input JPEG buffer to determine chroma subsampling */
 	if (vb->vb2_queue->type == V4L2_BUF_TYPE_VIDEO_OUTPUT &&
 	    q_data->fourcc == V4L2_PIX_FMT_JPEG &&
-	    !ctx->params.jpeg_chroma_subsampling[0])
+	    !ctx->params.jpeg_chroma_subsampling[0]) {
 			coda_jpeg_decode_header(ctx, vb);
+		if (ctx->params.jpeg_format == 0) {
+			struct coda_q_data *q_data_dst;
+
+			q_data_dst = get_q_data(ctx, V4L2_BUF_TYPE_VIDEO_CAPTURE);
+			q_data_dst->width = round_up(q_data->width, 16);
+			q_data_dst->bytesperline = q_data_dst->width;
+			if (ctx->params.jpeg_format == 0) {
+				q_data_dst->height = round_up(q_data->height, 16);
+				q_data_dst->sizeimage =
+						q_data_dst->bytesperline *
+						q_data_dst->height * 3 / 2;
+				q_data_dst->fourcc = V4L2_PIX_FMT_NV12;
+			} else {
+				q_data_dst->height = round_up(q_data->height, 8);
+				q_data_dst->sizeimage =
+						q_data_dst->bytesperline *
+						q_data_dst->height * 2;
+				q_data_dst->fourcc = V4L2_PIX_FMT_YUV422P;
+			}
+			q_data_dst->rect.left = 0;
+			q_data_dst->rect.top = 0;
+			q_data_dst->rect.width = q_data->width;
+			q_data_dst->rect.height = q_data->height;
+		}
+	}
 
 	/*
 	 * In the decoder case, immediately try to copy the buffer into the
