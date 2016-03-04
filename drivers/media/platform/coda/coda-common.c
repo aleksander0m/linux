@@ -614,8 +614,6 @@ static int coda_try_fmt(struct coda_ctx *ctx, const struct coda_codec *codec,
 					f->fmt.pix.height * 2;
 		break;
 	case V4L2_PIX_FMT_JPEG:
-		f->fmt.pix.colorspace = V4L2_COLORSPACE_JPEG;
-		/* fallthrough */
 	case V4L2_PIX_FMT_H264:
 	case V4L2_PIX_FMT_MPEG4:
 	case V4L2_PIX_FMT_MPEG2:
@@ -667,7 +665,19 @@ static int coda_try_fmt_vid_cap(struct file *file, void *priv,
 		}
 	}
 
-	f->fmt.pix.colorspace = ctx->colorspace;
+	if (ctx->colorspace == V4L2_COLORSPACE_JPEG) {
+		switch (f->fmt.pix.colorspace) {
+		case V4L2_COLORSPACE_SMPTE170M:
+		case V4L2_COLORSPACE_REC709:
+		case V4L2_COLORSPACE_SRGB:
+			break;
+		default:
+			f->fmt.pix.colorspace = V4L2_COLORSPACE_JPEG;
+			break;
+		}
+	} else {
+		f->fmt.pix.colorspace = ctx->colorspace;
+	}
 
 	q_data_src = get_q_data(ctx, V4L2_BUF_TYPE_VIDEO_OUTPUT);
 	codec = coda_find_codec(ctx->dev, q_data_src->fourcc,
@@ -718,12 +728,19 @@ static int coda_try_fmt_vid_out(struct file *file, void *priv,
 		return ret;
 
 	switch (f->fmt.pix.colorspace) {
+	case V4L2_COLORSPACE_SMPTE170M:
 	case V4L2_COLORSPACE_REC709:
-	case V4L2_COLORSPACE_JPEG:
+	case V4L2_COLORSPACE_SRGB:
 		break;
+	case V4L2_COLORSPACE_JPEG:
+		if (f->fmt.pix.pixelformat == V4L2_PIX_FMT_JPEG)
+			break;
+		/* else fall through */
 	default:
 		if (f->fmt.pix.pixelformat == V4L2_PIX_FMT_JPEG)
 			f->fmt.pix.colorspace = V4L2_COLORSPACE_JPEG;
+		if (f->fmt.pix.width <= 720 && f->fmt.pix.height <= 576)
+			f->fmt.pix.colorspace = V4L2_COLORSPACE_SMPTE170M;
 		else
 			f->fmt.pix.colorspace = V4L2_COLORSPACE_REC709;
 	}
