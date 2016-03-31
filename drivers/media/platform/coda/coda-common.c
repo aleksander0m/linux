@@ -2005,6 +2005,7 @@ static int coda_queue_init(struct coda_ctx *ctx, struct vb2_queue *vq)
 	 */
 	vq->allow_zero_bytesused = 1;
 	vq->dev = &ctx->dev->plat_dev->dev;
+	vq->dma_attrs = ctx->dma_attrs;
 
 	return vb2_queue_init(vq);
 }
@@ -2089,6 +2090,8 @@ static int coda_open(struct file *file)
 		ret = -ENOMEM;
 		goto err_coda_name_init;
 	}
+
+	ctx->dma_attrs = DMA_ATTR_WRITE_COMBINE;
 
 	ctx->debugfs_entry = debugfs_create_dir(name, dev->debugfs_root);
 	kfree(name);
