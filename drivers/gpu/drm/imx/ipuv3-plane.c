@@ -21,6 +21,7 @@
 #include <drm/drm_plane_helper.h>
 
 #include "video/imx-ipu-v3.h"
+#include "imx-drm.h"
 #include "ipuv3-plane.h"
 
 static inline struct ipu_plane *to_ipu_plane(struct drm_plane *p)
@@ -481,7 +482,9 @@ static void ipu_plane_atomic_update(struct drm_plane *plane,
 	struct drm_rect *dst = &state->dst;
 	unsigned long eba, ubo, vbo;
 	unsigned long alpha_eba = 0;
-	enum ipu_color_space ics;
+	struct imx_crtc_state *imx_crtc_state = to_imx_crtc_state(crtc_state);
+	u32 bus_format = imx_crtc_state->bus_format;
+	enum ipu_color_space ics, ics_out;
 	int active;
 
 	if (ipu_plane->dp_flow == IPU_DP_FLOW_SYNC_FG)
@@ -505,7 +508,9 @@ static void ipu_plane_atomic_update(struct drm_plane *plane,
 	ics = ipu_drm_fourcc_to_colorspace(state->fb->pixel_format);
 	switch (ipu_plane->dp_flow) {
 	case IPU_DP_FLOW_SYNC_BG:
-		ipu_dp_setup_channel(ipu_plane->dp, ics, IPUV3_COLORSPACE_RGB);
+		ics_out = bus_format ? ipu_bus_format_to_colorspace(bus_format)
+				     : IPUV3_COLORSPACE_RGB;
+		ipu_dp_setup_channel(ipu_plane->dp, ics, ics_out);
 		ipu_dp_set_global_alpha(ipu_plane->dp, true, 0, true);
 		break;
 	case IPU_DP_FLOW_SYNC_FG:
