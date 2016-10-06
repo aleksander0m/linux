@@ -208,6 +208,7 @@ struct ipu_soc {
 	struct ipu_vdi          *vdi_priv;
 	struct ipu_image_convert_priv *image_convert_priv;
 	struct ipu_smfc_priv	*smfc_priv;
+	struct ipu_prg		*prg_priv;
 };
 
 static inline u32 ipu_idmac_read(struct ipu_soc *ipu, unsigned offset)
