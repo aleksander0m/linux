@@ -732,6 +732,8 @@ void drm_mm_init_scan(struct drm_mm *mm,
 		      unsigned alignment,
 		      unsigned long color)
 {
+	DRM_MM_BUG_ON(!size);
+
 	mm->scan_color = color;
 	mm->scan_alignment = alignment;
 	mm->scan_size = size;
@@ -767,6 +769,9 @@ void drm_mm_init_scan_with_range(struct drm_mm *mm,
 				 u64 start,
 				 u64 end)
 {
+	DRM_MM_BUG_ON(start >= end);
+	DRM_MM_BUG_ON(!size || size > end - start);
+
 	mm->scan_color = color;
 	mm->scan_alignment = alignment;
 	mm->scan_size = size;
@@ -885,6 +890,8 @@ EXPORT_SYMBOL(drm_mm_scan_remove_block);
  */
 void drm_mm_init(struct drm_mm *mm, u64 start, u64 size)
 {
+	DRM_MM_BUG_ON(start + size <= start);
+
 	INIT_LIST_HEAD(&mm->hole_stack);
 	mm->scanned_blocks = 0;
 
