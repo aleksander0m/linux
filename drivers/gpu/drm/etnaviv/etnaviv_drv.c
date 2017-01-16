@@ -17,6 +17,7 @@
 #include <linux/component.h>
 #include <linux/of_platform.h>
 
+#include "etnaviv_cmdbuf.h"
 #include "etnaviv_drv.h"
 #include "etnaviv_gpu.h"
 #include "etnaviv_gem.h"
