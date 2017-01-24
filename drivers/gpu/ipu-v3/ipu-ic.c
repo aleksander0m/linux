@@ -1061,9 +1061,9 @@ struct image_convert_ctx *ipu_image_convert_prepare2(struct ipu_soc *ipu,
 	}
 
 	/* compute static decimator coefficients */
-	while ((in->rect.width >> h_downsize_coeff) > out->rect.width)
+	while ((in->rect.width >> h_downsize_coeff) >= out->rect.width * 2)
 		h_downsize_coeff++;
-	while ((in->rect.height >> v_downsize_coeff) > out->rect.height)
+	while ((in->rect.height >> v_downsize_coeff) >= out->rect.height * 2)
 		v_downsize_coeff++;
 
 	/* move and crop the output image according to IDMAC limitations */
