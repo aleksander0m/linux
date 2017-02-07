@@ -467,6 +467,15 @@ config BACKLIGHT_ARCXCNN
 	  If you have an ARCxCnnnn family backlight say Y to enable
 	  the backlight driver.
 
+config BACKLIGHT_ZII_PIC
+	tristate "ZII PIC LCD Backlight driver"
+	depends on MFD_ZII_PIC
+
+	help
+	  Say y to enable the ZII PIC LCD Backlight driver.
+
+	  If unsure, say N
+
 endif # BACKLIGHT_CLASS_DEVICE
 
 endif # BACKLIGHT_LCD_SUPPORT
