@@ -52,15 +52,6 @@ void rmi_2d_sensor_abs_process(struct rmi_2d_sensor *sensor,
 	obj->x += axis_align->offset_x;
 	obj->y += axis_align->offset_y;
 
-	obj->x =  max(axis_align->clip_x_low, obj->x);
-	obj->y =  max(axis_align->clip_y_low, obj->y);
-
-	if (axis_align->clip_x_high)
-		obj->x = min(sensor->max_x, obj->x);
-
-	if (axis_align->clip_y_high)
-		obj->y =  min(sensor->max_y, obj->y);
-
 	sensor->tracking_pos[slot].x = obj->x;
 	sensor->tracking_pos[slot].y = obj->y;
 }
@@ -151,16 +142,6 @@ static void rmi_2d_sensor_set_input_params(struct rmi_2d_sensor *sensor)
 			swap(sensor->axis_align.clip_x_high,
 			     sensor->axis_align.clip_y_high);
 		}
-
-		sensor->min_x = sensor->axis_align.clip_x_low;
-		if (sensor->axis_align.clip_x_high)
-			sensor->max_x = min(sensor->max_x,
-				sensor->axis_align.clip_x_high);
-
-		sensor->min_y = sensor->axis_align.clip_y_low;
-		if (sensor->axis_align.clip_y_high)
-			sensor->max_y = min(sensor->max_y,
-				sensor->axis_align.clip_y_high);
 
 		set_bit(EV_ABS, input->evbit);
 		input_set_abs_params(input, ABS_MT_POSITION_X, 0, sensor->max_x,
