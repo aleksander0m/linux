@@ -45,6 +45,7 @@ struct imx_pm_domain {
 	unsigned int reg_offs;
 	signed char cntr_pdn_bit;
 	unsigned int ipg_rate_mhz;
+	bool allow_dynamic_pd;
 };
 
 static inline struct imx_pm_domain *
@@ -58,6 +59,9 @@ static int imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
 	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
 	int iso, iso2sw;
 	u32 val;
+
+	if (!pd->allow_dynamic_pd)
+		return -EBUSY;
 
 	/* Read ISO and ISO2SW power down delays */
 	regmap_read(pd->regmap, pd->reg_offs + GPC_PGC_PUPSCR_OFFS, &val);
@@ -255,6 +259,7 @@ static struct imx_pm_domain imx_gpc_domains[] = {
 		},
 		.reg_offs = 0x260,
 		.cntr_pdn_bit = 0,
+		.allow_dynamic_pd = true,
 	}, {
 		.base = {
 			.name = "DISPLAY",
@@ -263,23 +268,33 @@ static struct imx_pm_domain imx_gpc_domains[] = {
 		},
 		.reg_offs = 0x240,
 		.cntr_pdn_bit = 4,
+		.allow_dynamic_pd = true,
 	}
 };
 
 struct imx_gpc_dt_data {
 	int num_domains;
+	bool err009619_present;
 };
 
 static const struct imx_gpc_dt_data imx6q_dt_data = {
 	.num_domains = 2,
+	.err009619_present = false,
+};
+
+static const struct imx_gpc_dt_data imx6qp_dt_data = {
+	.num_domains = 2,
+	.err009619_present = true,
 };
 
 static const struct imx_gpc_dt_data imx6sl_dt_data = {
 	.num_domains = 3,
+	.err009619_present = false,
 };
 
 static const struct of_device_id imx_gpc_dt_ids[] = {
 	{ .compatible = "fsl,imx6q-gpc", .data = &imx6q_dt_data },
+	{ .compatible = "fsl,imx6qp-gpc", .data = &imx6qp_dt_data },
 	{ .compatible = "fsl,imx6sl-gpc", .data = &imx6sl_dt_data },
 	{ }
 };
@@ -376,6 +391,10 @@ static int imx_gpc_probe(struct platform_device *pdev)
 			ret);
 		return ret;
 	}
+
+	/* Disable PU power down in normal operation if ERR009619 is present */
+	if (of_id_data->err009619_present)
+		imx_gpc_domains[1].allow_dynamic_pd = false;
 
 	if (!pgc_node) {
 		ret = imx_gpc_old_dt_init(&pdev->dev, regmap,
