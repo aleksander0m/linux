@@ -1259,6 +1259,9 @@ static void coda_pic_run_work(struct work_struct *work)
 			ctx->hold = true;
 
 			coda_hw_reset(ctx);
+
+			if (ctx->ops->run_timeout)
+				ctx->ops->run_timeout(ctx);
 		} else {
 			dev_err(&dev->plat_dev->dev, "CODA JPEG timeout\n");
 		}
