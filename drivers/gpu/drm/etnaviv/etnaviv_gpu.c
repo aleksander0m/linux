@@ -633,7 +633,7 @@ static void etnaviv_gpu_hw_init(struct etnaviv_gpu *gpu)
 		u32 bus_config = gpu_read(gpu, VIVS_MC_BUS_CONFIG);
 		bus_config &= ~(VIVS_MC_BUS_CONFIG_FE_BUS_CONFIG__MASK |
 				VIVS_MC_BUS_CONFIG_TX_BUS_CONFIG__MASK);
-		bus_config |= VIVS_MC_BUS_CONFIG_FE_BUS_CONFIG(1) |
+		bus_config |= VIVS_MC_BUS_CONFIG_FE_BUS_CONFIG(8) |
 			      VIVS_MC_BUS_CONFIG_TX_BUS_CONFIG(0);
 		gpu_write(gpu, VIVS_MC_BUS_CONFIG, bus_config);
 	}
