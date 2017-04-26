@@ -559,6 +559,17 @@ static void etnaviv_gpu_enable_mlcg(struct etnaviv_gpu *gpu)
 	gpu_write(gpu, VIVS_PM_MODULE_CONTROLS, pmc);
 }
 
+static void etnaviv_gpu_disable_mlcg(struct etnaviv_gpu *gpu)
+{
+	u32 ppc;
+
+	/* disable clock gating */
+	ppc = gpu_read(gpu, VIVS_PM_POWER_CONTROLS);
+	ppc &= ~VIVS_PM_POWER_CONTROLS_ENABLE_MODULE_CLOCK_GATING;
+
+	gpu_write(gpu, VIVS_PM_POWER_CONTROLS, ppc);
+}
+
 void etnaviv_gpu_start_fe(struct etnaviv_gpu *gpu, u32 address, u16 prefetch)
 {
 	gpu_write(gpu, VIVS_FE_COMMAND_ADDRESS, address);
@@ -1547,6 +1558,13 @@ static int etnaviv_gpu_hw_suspend(struct etnaviv_gpu *gpu)
 		 * we fail, just warn and continue.
 		 */
 		etnaviv_gpu_wait_idle(gpu, 100);
+
+		/*
+		 * Disable module-level clock gating so that reset signals
+		 * issued to the GPU during resume of the power domain can
+		 * reach all modules. MLCG will be reenabled during resume.
+		 */
+		etnaviv_gpu_disable_mlcg(gpu);
 	}
 
 	return etnaviv_gpu_clk_disable(gpu);
