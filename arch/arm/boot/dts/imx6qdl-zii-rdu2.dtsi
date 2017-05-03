@@ -729,7 +729,7 @@
 &usbotg {
 	vbus-supply = <&reg_5p0v_user_usb>;
 	disable-over-current;
-	dr_mode = "host";
+	dr_mode = "otg";
 	status = "okay";
 };
 
