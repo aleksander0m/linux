@@ -602,9 +602,9 @@ static void ipu_plane_atomic_update(struct drm_plane *plane,
 		ipu_prg_channel_configure(ipu_plane->ipu_ch, axi_id,
 					  drm_rect_width(&state->src) >> 16,
 					  drm_rect_height(&state->src) >> 16,
-					  state->fb->pitches[0],
-					  state->fb->format->format,
-					  state->fb->modifier,
+					  fb->pitches[0],
+					  fb->format->format,
+					  fb->modifier,
 					  &eba);
 	}
 
@@ -624,7 +624,7 @@ static void ipu_plane_atomic_update(struct drm_plane *plane,
 		return;
 	}
 
-	ics = ipu_drm_fourcc_to_colorspace(state->fb->format->format);
+	ics = ipu_drm_fourcc_to_colorspace(fb->format->format);
 	switch (ipu_plane->dp_flow) {
 	case IPU_DP_FLOW_SYNC_BG:
 		ics_out = bus_format ? ipu_bus_format_to_colorspace(bus_format)
@@ -636,7 +636,7 @@ static void ipu_plane_atomic_update(struct drm_plane *plane,
 		ipu_dp_setup_channel(ipu_plane->dp, ics,
 					IPUV3_COLORSPACE_UNKNOWN);
 		/* Enable local alpha on partial plane */
-		switch (state->fb->format->format) {
+		switch (fb->format->format) {
 		case DRM_FORMAT_ARGB1555:
 		case DRM_FORMAT_ABGR1555:
 		case DRM_FORMAT_RGBA5551:
