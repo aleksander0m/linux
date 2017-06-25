@@ -456,16 +456,24 @@ static inline void *dma_alloc_attrs(struct device *dev, size_t size,
 
 	BUG_ON(!ops);
 
-	if (dma_alloc_from_coherent(dev, size, dma_handle, &cpu_addr))
+	if (dma_alloc_from_coherent(dev, size, dma_handle, &cpu_addr)) {
+		dev_err(dev, "-----------------------> cpu addr %p", cpu_addr);
 		return cpu_addr;
+	}
+	dev_err(dev,"---------------------> alloc from coherent failed");
 
-	if (!arch_dma_alloc_attrs(&dev, &flag))
+	if (!arch_dma_alloc_attrs(&dev, &flag)) {
+		dev_err(dev,"---------------------> arch dma alloc attrs failed");
 		return NULL;
-	if (!ops->alloc)
+	}
+	if (!ops->alloc) {
+		dev_err(dev,"---------------------> no ops alloc");
 		return NULL;
+	}
 
 	cpu_addr = ops->alloc(dev, size, dma_handle, flag, attrs);
 	debug_dma_alloc_coherent(dev, size, *dma_handle, cpu_addr);
+	dev_err(dev, "-----------------------> cpu addr(2) %p", cpu_addr);
 	return cpu_addr;
 }
 
