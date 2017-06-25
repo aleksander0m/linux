@@ -1,7 +1,7 @@
 VERSION = 4
 PATCHLEVEL = 9
 SUBLEVEL = 32
-EXTRAVERSION = -imx-rdu2-2
+EXTRAVERSION = -imx-rdu2-3
 NAME = Roaring Lionus
 
 # *DOCUMENTATION*
