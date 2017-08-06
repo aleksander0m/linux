@@ -569,6 +569,7 @@
 	rtc@68 {
 		compatible = "dallas,ds1341";
 		reg = <0x68>;
+		wakeup-source;
 	};
 };
 
