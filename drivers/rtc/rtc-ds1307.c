@@ -39,6 +39,7 @@ enum ds_type {
 	ds_1338,
 	ds_1339,
 	ds_1340,
+	ds_1341,
 	ds_1388,
 	ds_3231,
 	m41t0,
@@ -178,6 +179,10 @@ static struct chip_desc chips[last_ds_type] = {
 		.century_bit	= DS1340_BIT_CENTURY,
 		.trickle_charger_reg = 0x08,
 	},
+	[ds_1341] = {
+		.century_reg	= DS1307_REG_MONTH,
+		.century_bit	= DS1337_BIT_CENTURY,
+	},
 	[ds_1388] = {
 		.trickle_charger_reg = 0x0a,
 	},
@@ -202,6 +207,7 @@ static const struct i2c_device_id ds1307_id[] = {
 	{ "ds1339", ds_1339 },
 	{ "ds1388", ds_1388 },
 	{ "ds1340", ds_1340 },
+	{ "ds1341", ds_1341 },
 	{ "ds3231", ds_3231 },
 	{ "m41t0", m41t0 },
 	{ "m41t00", m41t00 },
@@ -243,6 +249,10 @@ static const struct of_device_id ds1307_of_match[] = {
 	{
 		.compatible = "dallas,ds1340",
 		.data = (void *)ds_1340
+	},
+	{
+		.compatible = "dallas,ds1341",
+		.data = (void *)ds_1341
 	},
 	{
 		.compatible = "maxim,ds3231",
@@ -290,6 +300,7 @@ static const struct acpi_device_id ds1307_acpi_ids[] = {
 	{ .id = "DS1339", .driver_data = ds_1339 },
 	{ .id = "DS1388", .driver_data = ds_1388 },
 	{ .id = "DS1340", .driver_data = ds_1340 },
+	{ .id = "DS1341", .driver_data = ds_1341 },
 	{ .id = "DS3231", .driver_data = ds_3231 },
 	{ .id = "M41T0", .driver_data = m41t0 },
 	{ .id = "M41T00", .driver_data = m41t00 },
@@ -1174,6 +1185,7 @@ static int ds1307_probe(struct i2c_client *client,
 	static const int	bbsqi_bitpos[] = {
 		[ds_1337] = 0,
 		[ds_1339] = DS1339_BIT_BBSQI,
+		[ds_1341] = 0,
 		[ds_3231] = DS3231_BIT_BBSQW,
 	};
 	const struct rtc_class_ops *rtc_ops = &ds13xx_rtc_ops;
@@ -1252,6 +1264,7 @@ static int ds1307_probe(struct i2c_client *client,
 	switch (ds1307->type) {
 	case ds_1337:
 	case ds_1339:
+	case ds_1341:
 	case ds_3231:
 		/* get registers that the "rtc" read below won't read... */
 		err = regmap_bulk_read(ds1307->regmap, DS1337_REG_CONTROL,
