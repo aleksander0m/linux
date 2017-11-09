@@ -779,6 +779,10 @@
 	status = "okay";
 };
 
+&wdog1 {
+	status = "disabled";
+};
+
 &audmux {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_audmux>;
